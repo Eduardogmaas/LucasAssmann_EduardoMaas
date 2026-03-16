@@ -1,106 +1,157 @@
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
 
 public class Criptograinator extends JFrame {
 
-    static final String PALAVRA_FIXA = "ALFABETIZARR";
+    private static final String PALAVRA_FIXA = "ALFABETIZARR";
+    private static final int MODULO = 36;
 
-    private JTextField campoSenha;
+    private JTextField campoEntrada;
     private JTextField campoResultado;
+
+    private int tamanhoOriginal = 0;
 
     public Criptograinator() {
 
         setTitle("Criptograinator");
-        setSize(400, 200);
+        setSize(420, 220);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setLayout(new GridLayout(6, 1, 5, 5));
 
-        setLayout(new GridLayout(4, 1));
-
-        campoSenha = new JTextField();
+        campoEntrada = new JTextField();
         campoResultado = new JTextField();
         campoResultado.setEditable(false);
 
-        JButton botaoCriptografar = new JButton("Criptografar");
-        JButton botaoDescriptografar = new JButton("Descriptografar");
+        JButton btnCriptografar = new JButton("Criptografar");
+        JButton btnDescriptografar = new JButton("Descriptografar");
 
-        add(new JLabel("Digite algo para ser criptografado! (máximo de 12 letras):"));
-        add(campoSenha);
-        add(botaoCriptografar);
-        add(botaoDescriptografar);
+        add(new JLabel("Digite até 12 caracteres (letras ou números):"));
+        add(campoEntrada);
+        add(btnCriptografar);
+        add(btnDescriptografar);
         add(new JLabel("Resultado:"));
         add(campoResultado);
 
-        botaoCriptografar.addActionListener(e -> {
-            String senha = campoSenha.getText();
-
-            if (senha.length() > 12) {
-                JOptionPane.showMessageDialog(this,
-                        "Máximo de 12 caracteres!");
-                return;
-            }
-
-            campoResultado.setText(criptografar(senha));
-        });
-
-
-        botaoDescriptografar.addActionListener(e -> {
-            String textoCripto = campoResultado.getText();
-            campoSenha.setText(descriptografar(textoCripto, campoSenha.getText().length()));
-        });
+        btnCriptografar.addActionListener(e -> criptografarAcao());
+        btnDescriptografar.addActionListener(e -> descriptografarAcao());
     }
 
-    public static int letraParaNumero(char letra) {
-        letra = Character.toUpperCase(letra);
-        if (letra >= 'A' && letra <= 'Z') {
-            return letra - 'A' + 1;
+    // ================================
+    // AÇÕES DOS BOTÕES
+    // ================================
+
+    private void criptografarAcao() {
+
+        String texto = campoEntrada.getText();
+
+        if (texto.length() > PALAVRA_FIXA.length()) {
+            JOptionPane.showMessageDialog(this,
+                    "Máximo de 12 caracteres!");
+            return;
         }
+
+        tamanhoOriginal = texto.length();
+        campoResultado.setText(criptografar(texto));
+    }
+
+    private void descriptografarAcao() {
+
+        String textoCripto = campoResultado.getText();
+
+        if (textoCripto.isEmpty()) return;
+
+        campoEntrada.setText(descriptografar(textoCripto, tamanhoOriginal));
+    }
+
+    // ================================
+    // CONVERSÕES
+    // ================================
+
+    private static int charParaNumero(char c) {
+
+        if (Character.isLetter(c)) {
+            c = Character.toUpperCase(c);
+            return c - 'A' + 1;
+        }
+
+        if (Character.isDigit(c)) {
+            return c - '0' + 27;
+        }
+
         return 1;
     }
 
-    public static char numeroParaLetra(int numero) {
-        return (char) ('A' + numero - 1);
+    private static char numeroParaChar(int n) {
+
+        if (n <= 26) {
+            return (char) ('A' + n - 1);
+        } else {
+            return (char) ('0' + (n - 27));
+        }
     }
 
-    public static String criptografar(String senha) {
+    // ================================
+    // CRIPTOGRAFIA
+    // ================================
+
+    private static String criptografar(String texto) {
+
         StringBuilder resultado = new StringBuilder();
 
         for (int i = 0; i < PALAVRA_FIXA.length(); i++) {
 
-            int numSenha = (i < senha.length())
-                    ? letraParaNumero(senha.charAt(i))
-                    : 1;
+            char original = (i < texto.length()) ? texto.charAt(i) : 'A';
 
-            int numFixo = letraParaNumero(PALAVRA_FIXA.charAt(i));
+            boolean minuscula = Character.isLowerCase(original);
 
-            int soma = (numSenha + numFixo - 1) % 26 + 1;
+            int numTexto = charParaNumero(original);
+            int numFixo = charParaNumero(PALAVRA_FIXA.charAt(i));
 
-            resultado.append(numeroParaLetra(soma));
+            int soma = (numTexto + numFixo - 1) % MODULO + 1;
+
+            char cripto = numeroParaChar(soma);
+
+            if (minuscula)
+                cripto = Character.toLowerCase(cripto);
+
+            resultado.append(cripto);
         }
 
         return resultado.toString();
     }
 
-    public static String descriptografar(String textoCripto, int tamanhoOriginal) {
+    // ================================
+    // DESCRIPTOGRAFIA
+    // ================================
+
+    private static String descriptografar(String textoCripto, int tamanhoOriginal) {
+
         StringBuilder resultado = new StringBuilder();
 
         for (int i = 0; i < tamanhoOriginal; i++) {
 
-            int numCripto = letraParaNumero(textoCripto.charAt(i));
-            int numFixo = letraParaNumero(PALAVRA_FIXA.charAt(i));
+            char c = textoCripto.charAt(i);
+            boolean minuscula = Character.isLowerCase(c);
 
-            int sub = (numCripto - numFixo + 26 - 1) % 26 + 1;
+            int numCripto = charParaNumero(c);
+            int numFixo = charParaNumero(PALAVRA_FIXA.charAt(i));
 
-            resultado.append(numeroParaLetra(sub));
+            int sub = (numCripto - numFixo + MODULO - 1) % MODULO + 1;
+
+            char normal = numeroParaChar(sub);
+
+            if (minuscula)
+                normal = Character.toLowerCase(normal);
+
+            resultado.append(normal);
         }
 
         return resultado.toString();
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new Criptograinator().setVisible(true);
-        });
+        SwingUtilities.invokeLater(() ->
+                new Criptograinator().setVisible(true));
     }
 }
