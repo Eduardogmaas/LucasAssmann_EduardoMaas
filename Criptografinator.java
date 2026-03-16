@@ -14,7 +14,9 @@ public class Criptografinator extends JFrame {
     // guarda as posições que são minúsculas
     private boolean[] mapaMinusculas = new boolean[PALAVRA_FIXA.length()];
 
+
     // Nossa interface
+
     public Criptografinator() {
 
         setTitle("Criptografinator");
@@ -41,7 +43,8 @@ public class Criptografinator extends JFrame {
         btnDescriptografar.addActionListener(e -> descriptografarAcao());
     }
 
-    // Funções dos Botões
+    // AÇÕES DOS BOTÕES
+
     private void criptografarAcao() {
 
         String texto = campoEntrada.getText();
@@ -54,7 +57,6 @@ public class Criptografinator extends JFrame {
 
         tamanhoOriginal = texto.length();
 
-        //salva onde era minúsculo
         for (int i = 0; i < tamanhoOriginal; i++) {
             mapaMinusculas[i] = Character.isLowerCase(texto.charAt(i));
         }
@@ -64,13 +66,15 @@ public class Criptografinator extends JFrame {
 
     private void descriptografarAcao() {
 
-        String textoCripto = campoResultado.getText();
+        String textoCripto = campoEntrada.getText();
+
         if (textoCripto.isEmpty()) return;
 
-        campoEntrada.setText(descriptografar(textoCripto, tamanhoOriginal));
+        campoResultado.setText(descriptografar(textoCripto, tamanhoOriginal));
     }
 
-    // Conversão dos caracteres
+    // CONVERSÕES DOS CARACTERES
+
     private static int charParaNumero(char c) {
 
         if (Character.isLetter(c)) {
@@ -94,7 +98,8 @@ public class Criptografinator extends JFrame {
         }
     }
 
-    // Função da Criptografia
+    // FUNÇÃO DA CRIPTOGRAFIA
+
     private static String criptografar(String texto) {
 
         StringBuilder resultado = new StringBuilder();
@@ -108,15 +113,14 @@ public class Criptografinator extends JFrame {
 
             int soma = (numTexto + numFixo - 1) % MODULO + 1;
 
-            char cripto = numeroParaChar(soma);
-
-            resultado.append(cripto);
+            resultado.append(numeroParaChar(soma));
         }
 
         return resultado.toString();
     }
 
-    // Função da Descriptografia
+    // FUNÇÃO DA DESCRIPTOGRAFIA
+
     private String descriptografar(String textoCripto, int tamanhoOriginal) {
 
         StringBuilder resultado = new StringBuilder();
@@ -130,7 +134,6 @@ public class Criptografinator extends JFrame {
 
             char normal = numeroParaChar(sub);
 
-            //  volta pro formato original
             if (mapaMinusculas[i]) {
                 normal = Character.toLowerCase(normal);
             }
@@ -141,7 +144,7 @@ public class Criptografinator extends JFrame {
         return resultado.toString();
     }
 
-    // Main kkkkkkkkkkk
+    // MAIN KKKKKKKKKK
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() ->
                 new Criptografinator().setVisible(true));
